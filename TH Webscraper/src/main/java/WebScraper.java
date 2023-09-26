@@ -21,9 +21,7 @@ public class WebScraper {
         Document document = Jsoup.connect("https://www.teamhitless.com/about/members/").get();
         Elements runnerBody = document.select("#et-boc > div > div > div.et_pb_section.et_pb_section_1.et_pb_with_background.et_section_regular > div.et_pb_row.et_pb_row_2 > div > div > div > p").select("a");
         for (int i = 0; i < runnerBody.size(); i++) {
-            String urlString = getURL(runnerBody.get(i).attr("href"));
-            Document doc = Jsoup.parse(urlString);
-            doc.connection().get();
+            Document doc = Jsoup.connect("https://www.teamhitless.com" + runnerBody.get(i).attr("href")).get();
             Element title = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_0 > div > div > div > h1 > span").first();
             Element title2 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_0 > div > div > div > h1").first();
             Elements body = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_2.et_pb_equal_columns.et_pb_gutters4 > div.et_pb_column.et_pb_column_2_3.et_pb_column_2.et_pb_css_mix_blend_mode_passthrough");
@@ -66,8 +64,4 @@ public class WebScraper {
         }
     }
 
-    private static String getURL(String href) {
-        String url = "https://www.teamhitless.com" + href;
-        return url;
-    }
 }
