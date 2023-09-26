@@ -37,14 +37,17 @@ public class WebScraper {
             Element title3 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_0 > div > div > div > h1").first();
             Element title4 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_0 > div > div > div > div > h1").first();
             Element title5 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_0 > div > div > div > div > h1 > span").first();
+            Element title6 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_0 > div > div > div > div > div > h1").first();
             Elements body = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_2.et_pb_equal_columns.et_pb_gutters4 > div.et_pb_column.et_pb_column_2_3.et_pb_column_2.et_pb_css_mix_blend_mode_passthrough");
             Elements body2 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_2.et_pb_equal_columns.et_pb_gutters4 > div > div");
 
-            String runner = title != null ? title.ownText() :
-                    title2 != null ? title2.ownText() :
-                            title3 != null ? title3.ownText() :
-                                    title4 != null ? title4.ownText():
-                                            title5 != null ? title5.ownText(): "Runner not found";
+            String runner = title != null && !title.ownText().isEmpty() ? title.ownText() :
+                    title2 != null && !title2.ownText().isEmpty() ? title2.ownText() :
+                            title3 != null && !title3.ownText().isEmpty() ? title3.ownText() :
+                                    title4 != null && !title4.ownText().isEmpty() ? title4.ownText():
+                                            title5 != null && !title5.ownText().isEmpty() ? title5.ownText():
+                                                    title6 != null && !title6.ownText().isEmpty() ? title6.ownText():
+                                                    "Runner not found";
 
             if (body.select("p").isEmpty()) {
                 saveRecord(csvPrinter, runner, body2);
@@ -52,9 +55,6 @@ public class WebScraper {
             saveRecord(csvPrinter, runner, body);
             csvPrinter.flush();
         }
-
-
-
     }
 
 
