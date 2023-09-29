@@ -5,6 +5,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,7 +20,7 @@ public class WebScraper {
         BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
         CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
 
-//
+
         Document document = Jsoup.connect("https://www.teamhitless.com/about/members/").timeout(0).get();
         Elements runnerBody = document.select("#et-boc > div > div > div.et_pb_section.et_pb_section_1.et_pb_with_background.et_section_regular > div.et_pb_row.et_pb_row_2 > div > div > div > p").select("a");
         for (int i = 0; i < runnerBody.size(); i++) {
@@ -44,26 +45,27 @@ public class WebScraper {
             String runner = title != null && !title.ownText().isEmpty() ? title.ownText() :
                     title2 != null && !title2.ownText().isEmpty() ? title2.ownText() :
                             title3 != null && !title3.ownText().isEmpty() ? title3.ownText() :
-                                    title4 != null && !title4.ownText().isEmpty() ? title4.ownText():
-                                            title5 != null && !title5.ownText().isEmpty() ? title5.ownText():
-                                                    title6 != null && !title6.ownText().isEmpty() ? title6.ownText():
-                                                    "Runner not found";
+                                    title4 != null && !title4.ownText().isEmpty() ? title4.ownText() :
+                                            title5 != null && !title5.ownText().isEmpty() ? title5.ownText() :
+                                                    title6 != null && !title6.ownText().isEmpty() ? title6.ownText() :
+                                                            "Runner not found";
 
             if (body.select("p").isEmpty()) {
                 saveRecord(csvPrinter, runner, body2);
+            } else {
+                saveRecord(csvPrinter, runner, body);
             }
-            saveRecord(csvPrinter, runner, body);
             csvPrinter.flush();
         }
     }
 
 
-    private static void saveRecord(CSVPrinter csvPrinter,  String runner, Elements body) {
+    private static void saveRecord(CSVPrinter csvPrinter, String runner, Elements body) {
         try {
 
             for (Element e : body.select("p").select("a")) {
 
-                if (e.ownText().isEmpty()) {
+                if (e.ownText().isEmpty() && e.select("span").text().isEmpty()) {
                     continue;
                 }
 
