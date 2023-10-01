@@ -57,6 +57,8 @@ public class WebScraper {
             }
             csvPrinter.flush();
         }
+
+
     }
 
 
