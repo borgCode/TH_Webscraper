@@ -15,7 +15,6 @@ public class WebScraper {
 
     public static void main(String[] args) throws IOException {
 
-        int index = getCurrentMemberIndex();
 
         String filePath = "TH Webscraper/runs.csv";
         BufferedWriter writer = Files.newBufferedWriter(Paths.get(filePath), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
@@ -24,7 +23,7 @@ public class WebScraper {
 
         Document document = Jsoup.connect("https://www.teamhitless.com/about/members/").timeout(0).get();
         Elements runnerBody = document.select("#et-boc > div > div > div.et_pb_section.et_pb_section_1.et_pb_with_background.et_section_regular > div.et_pb_row.et_pb_row_2 > div > div > div > p").select("a");
-        for (int i = index; i < runnerBody.size(); i++) {
+        for (int i = 0; i < runnerBody.size(); i++) {
             String runnerName;
             if (runnerBody.get(i).attr("href").startsWith("https://www.teamhitless.com")) {
                 runnerName = StringUtils.remove(runnerBody.get(i).attr("href"), "https://www.teamhitless.com");
@@ -68,19 +67,6 @@ public class WebScraper {
         BufferedWriter writer = new BufferedWriter(new FileWriter("TH Webscraper/currentMemberIndex.txt"));
         writer.write(String.valueOf(size));
         writer.close();
-        System.out.println(size);
-    }
-
-    private static int getCurrentMemberIndex() throws IOException {
-        int index;
-        BufferedReader br = new BufferedReader(new FileReader("TH Webscraper/currentMemberIndex.txt"));
-        try {
-            index = Integer.valueOf(br.readLine());
-        } finally {
-            br.close();
-        }
-        System.out.println(index);
-        return index;
     }
 
 
