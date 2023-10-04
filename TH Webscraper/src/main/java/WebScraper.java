@@ -39,6 +39,8 @@ public class WebScraper {
             Element title4 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_0 > div > div > div > div > h1").first();
             Element title5 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_0 > div > div > div > div > h1 > span").first();
             Element title6 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_0 > div > div > div > div > div > h1").first();
+            Element title7 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_0 > div > div > div > h1 > span:nth-child(2)").first();
+            Element title8 = doc.select("#message-username-1080719105251876974 > span").first();
             Elements body = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_2.et_pb_equal_columns.et_pb_gutters4 > div.et_pb_column.et_pb_column_2_3.et_pb_column_2.et_pb_css_mix_blend_mode_passthrough");
             Elements body2 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_2.et_pb_equal_columns.et_pb_gutters4 > div > div");
 
@@ -48,6 +50,8 @@ public class WebScraper {
                                     title4 != null && !title4.ownText().isEmpty() ? title4.ownText() :
                                             title5 != null && !title5.ownText().isEmpty() ? title5.ownText() :
                                                     title6 != null && !title6.ownText().isEmpty() ? title6.ownText() :
+                                                            title7 != null && !title7.ownText().isEmpty() ? title7.ownText() :
+                                                                    title8 != null && !title8.ownText().isEmpty() ? title8.ownText() :
                                                             "Runner not found";
 
             if (body.select("p").isEmpty()) {
@@ -73,20 +77,50 @@ public class WebScraper {
     private static void saveRecord(CSVPrinter csvPrinter, String runner, Elements body) {
         try {
 
-            for (Element e : body.select("p").select("a")) {
+            int counter = 0;
+            for (Element el : body.select("> div.et_pb_module.et_pb_toggle.et_pb_toggle_" + counter + ".et_pb_toggle_item.et_pb_text_align_center.et_pb_toggle_close")) {
 
-                if (e.ownText().isEmpty() && e.select("span").text().isEmpty()) {
-                    continue;
+                String game = el.select("h5").text();
+                StringBuilder category;
+
+                for (Element e : el.select("p").select("a")) {
+
+                    if (e.ownText().isEmpty() && e.select("span").text().isEmpty()) {
+                        continue;
+                    }
+                    if (e.ownText().matches("\\(World's First\\)|\\(World’s First\\)")) {
+                        continue;
+                    }
+
+
+                    String url = e.attr("href");
+
+                    String runName;
+                    if (e.ownText().isEmpty()) {
+                        runName = e.select("span").text();
+                    } else if (e.hasText() && e.select("span").hasText()) {
+                        runName = e.ownText() + e.select("span").text();
+                    } else {
+                        runName = e.ownText();
+                    }
+
+                    if (runName.matches("2\\)|3\\)")) {
+                        continue;
+                    }
+
+
+
+                    System.out.println(game);
+                    System.out.println(runner);
+                    System.out.println(runName);
+                    System.out.println(url);
+
+
+                    csvPrinter.printRecord(runner,game, category runName, url);
+                    csvPrinter.flush();
                 }
 
-                String url = e.attr("href");
-                String runName = e.ownText();
-                if (runName.isEmpty()) {
-                    runName = e.select("span").text();
-                }
-
-                csvPrinter.printRecord(runner, runName, url);
-                csvPrinter.flush();
+                counter++;
             }
 
         } catch (IOException e) {
