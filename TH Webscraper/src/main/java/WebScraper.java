@@ -56,9 +56,10 @@ public class WebScraper {
 
             if (body.select("p").isEmpty()) {
                 saveRecord(csvPrinter, runner, body2);
-            } else {
-                saveRecord(csvPrinter, runner, body);
             }
+
+            saveRecord(csvPrinter, runner, body);
+
             csvPrinter.flush();
         }
 
@@ -76,32 +77,52 @@ public class WebScraper {
 
     private static void saveRecord(CSVPrinter csvPrinter, String runner, Elements body) {
         try {
+            String query;
 
-            int counter = 0;
-            for (Element el : body.select("> div.et_pb_module.et_pb_toggle.et_pb_toggle_" + counter + ".et_pb_toggle_item.et_pb_text_align_center.et_pb_toggle_close")) {
+            if (body.hasClass("et_pb_css_mix_blend_mode_passthrough")) {
+                query = "> div.et_pb_module.et_pb_toggle";
+            } else {
+                query = "div.et_pb_module.et_pb_toggle.et_pb_toggle";
+            }
+
+            for (Element el : body.select(query)) {
 
                 String game = el.select("h5").text();
-                StringBuilder category;
+                StringBuilder category = new StringBuilder();
 
-                for (Element e : el.select("p").select("a")) {
+                for (Element e : el.select("p")) {
 
-                    if (e.ownText().isEmpty() && e.select("span").text().isEmpty()) {
+                    Elements categoryStrong = e.select("strong");
+                    if (categoryStrong.size() > 0 && categoryStrong.hasText()) {
+                        category.replace(0, category.length(), categoryStrong.text());
                         continue;
                     }
-                    if (e.ownText().matches("\\(World's First\\)|\\(World’s First\\)")) {
+                    Elements categoryBold = e.select("b");
+                    if (categoryBold.size() > 0 && categoryBold.hasText()) {
+                        category.replace(0, category.length(), categoryBold.text());
+                        continue;
+                    }
+                    Elements categorySpan = e.select("span");
+                    if (categorySpan.size() > 0 && categorySpan.hasText()) {
+                        category.replace(0, category.length(), categorySpan.text());
                         continue;
                     }
 
+                    if (e.select("a").text().isEmpty() && e.select("a").select("span").text().isEmpty()) {
+                        continue;
+                    }
+                    if (e.select("a").text().matches("\\(World's First\\)|\\(World’s First\\)")) {
+                        continue;
+                    }
 
-                    String url = e.attr("href");
-
+                    String url = e.select("a").attr("href");
                     String runName;
-                    if (e.ownText().isEmpty()) {
-                        runName = e.select("span").text();
-                    } else if (e.hasText() && e.select("span").hasText()) {
-                        runName = e.ownText() + e.select("span").text();
+                    if (e.select("a").text().isEmpty()) {
+                        runName = e.select("a").select("span").text();
+                    } else if (e.select("a").hasText() && e.select("a").select("span").hasText()) {
+                        runName = e.select("a").text() + e.select("a").select("span").text();
                     } else {
-                        runName = e.ownText();
+                        runName = e.select("a").text();
                     }
 
                     if (runName.matches("2\\)|3\\)")) {
@@ -111,16 +132,16 @@ public class WebScraper {
 
 
                     System.out.println(game);
+                    System.out.println(category);
                     System.out.println(runner);
                     System.out.println(runName);
                     System.out.println(url);
 
 
-                    csvPrinter.printRecord(runner,game, category runName, url);
+                    csvPrinter.printRecord(runner,game, category, runName, url);
                     csvPrinter.flush();
                 }
 
-                counter++;
             }
 
         } catch (IOException e) {
