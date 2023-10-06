@@ -42,7 +42,8 @@ public class WebScraper {
             Element title7 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_0 > div > div > div > h1 > span:nth-child(2)").first();
             Element title8 = doc.select("#message-username-1080719105251876974 > span").first();
             Elements body = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_2.et_pb_equal_columns.et_pb_gutters4 > div.et_pb_column.et_pb_column_2_3.et_pb_column_2.et_pb_css_mix_blend_mode_passthrough");
-            Elements body2 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_2.et_pb_equal_columns.et_pb_gutters4 > div > div");
+            Elements body2 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_2.et_pb_equal_columns.et_pb_gutters4 > div.et_pb_column.et_pb_column_3_5.et_pb_column_2.et_pb_css_mix_blend_mode_passthrough");
+            Elements body3 = doc.select("#et-boc > div > div > div > div.et_pb_row.et_pb_row_2.et_pb_equal_columns.et_pb_gutters4 > div > div");
 
             String runner = title != null && !title.ownText().isEmpty() ? title.ownText() :
                     title2 != null && !title2.ownText().isEmpty() ? title2.ownText() :
@@ -54,16 +55,20 @@ public class WebScraper {
                                                                     title8 != null && !title8.ownText().isEmpty() ? title8.ownText() :
                                                             "Runner not found";
 
-            if (body.select("p").isEmpty()) {
-                saveRecord(csvPrinter, runner, body2);
+            if (body.isEmpty()) {
+                if(body2.isEmpty()) {
+                    saveRecord(csvPrinter, runner, body3);
+                } else {
+                    saveRecord(csvPrinter, runner, body2);
+                }
+            } else {
+                saveRecord(csvPrinter, runner, body);
             }
-
-            saveRecord(csvPrinter, runner, body);
 
             csvPrinter.flush();
         }
 
-        setCurrentMemberIndex(3);
+        setCurrentMemberIndex(runnerBody.size());
 
 
     }
@@ -77,6 +82,7 @@ public class WebScraper {
 
     private static void saveRecord(CSVPrinter csvPrinter, String runner, Elements body) {
         try {
+
             String query;
 
             if (body.hasClass("et_pb_css_mix_blend_mode_passthrough")) {
@@ -92,6 +98,10 @@ public class WebScraper {
 
                 for (Element e : el.select("p")) {
 
+                    if(e.hasClass("#et-boc > div > div > div > div.et_pb_row.et_pb_row_2.et_pb_equal_columns.et_pb_gutters4 > div.et_pb_column.et_pb_column_2_5.et_pb_column_3.et_pb_css_mix_blend_mode_passthrough.et-last-child")) {
+                        continue;
+                    }
+
                     Elements categoryStrong = e.select("strong");
                     if (categoryStrong.size() > 0 && categoryStrong.hasText()) {
                         category.replace(0, category.length(), categoryStrong.text());
@@ -103,7 +113,8 @@ public class WebScraper {
                         continue;
                     }
                     Elements categorySpan = e.select("span");
-                    if (categorySpan.size() > 0 && categorySpan.hasText()) {
+
+                    if (categorySpan.size() > 0 && categorySpan.hasText() && categorySpan.attr("style").contains("bold")) {
                         category.replace(0, category.length(), categorySpan.text());
                         continue;
                     }
@@ -117,12 +128,13 @@ public class WebScraper {
 
                     String url = e.select("a").attr("href");
                     String runName;
-                    if (e.select("a").text().isEmpty()) {
-                        runName = e.select("a").select("span").text();
+
+                    if (!e.select("a").text().isEmpty()) {
+                        runName = e.select("a").text();
                     } else if (e.select("a").hasText() && e.select("a").select("span").hasText()) {
                         runName = e.select("a").text() + e.select("a").select("span").text();
                     } else {
-                        runName = e.select("a").text();
+                        runName = e.select("a").select("span").text();
                     }
 
                     if (runName.matches("2\\)|3\\)")) {
